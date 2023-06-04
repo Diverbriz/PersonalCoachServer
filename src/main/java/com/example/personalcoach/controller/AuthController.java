@@ -4,8 +4,11 @@ import com.example.personalcoach.model.ERole;
 import com.example.personalcoach.model.Role;
 import com.example.personalcoach.model.User;
 import com.example.personalcoach.repository.RoleRepository;
+import com.example.personalcoach.repository.UserProfileRepository;
 import com.example.personalcoach.repository.UserRepository;
 import com.example.personalcoach.service.UserDetailsImpl;
+import com.example.personalcoach.service.UserDetailsServiceImpl;
+import com.example.personalcoach.service.UserProfileService;
 import com.example.personalcoach.utils.JwtUtils;
 import com.example.pojo.JwtResponse;
 import com.example.pojo.LoginRequest;
@@ -36,7 +39,7 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private UserRepository userRepository;
+    private UserDetailsServiceImpl userDetailsService;
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
@@ -69,16 +72,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest){
-        if(userRepository.existsByUsername(signupRequest.getUsername())){
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is exist"));
-        }
-        if(userRepository.existsByEmail(signupRequest.getEmail())){
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is exist"));
-        }
+
         User user = new User(
                 signupRequest.getUsername(),
                 signupRequest.getEmail(),
@@ -122,7 +116,7 @@ public class AuthController {
 
         user.setRoles(roles);
 
-        userRepository.save(user);
+        userDetailsService.createUser(user);
         return ResponseEntity.ok(new MessageResponse
                 ("Employee registered successfully!" +
                         "password " + user.getPassword()));
