@@ -11,8 +11,13 @@ public class Type {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "type_sequence")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
+
+    public Type(){}
+    public Type(String name) {
+        this.name = name;
+    }
 
     public void setId(Long id) {
         this.id = id;

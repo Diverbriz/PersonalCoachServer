@@ -58,14 +58,16 @@ public class WebSecurityConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/auth/token").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/auth/token", "/api/items/**").permitAll()
                         .anyRequest().authenticated()
                         .and()
                         .addFilterAfter(authenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+
                 )
+
 //                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                .httpBasic(Customizer.withDefaults())
-//                .addFilterBefore(authenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

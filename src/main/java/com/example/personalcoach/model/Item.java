@@ -3,7 +3,9 @@ package com.example.personalcoach.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "item")
+@Table(name = "item", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name"})
+} )
 public class Item {
     @Id
     @SequenceGenerator(name = "item_sequence", sequenceName = "item_sequence")
@@ -16,13 +18,22 @@ public class Item {
 
     private float rating;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "type_id")
     private Type typeId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "brand_id")
     private Brand brandId;
+
+    public Item(){}
+    public Item(String name, float price, float rating, Brand brandId, Type typeId) {
+        this.name = name;
+        this.price = price;
+        this.rating = rating;
+        this.typeId = typeId;
+        this.brandId = brandId;
+    }
 
     public void setId(Long id) {
         this.id = id;

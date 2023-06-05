@@ -48,8 +48,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 ("Employee registered successfully!" +
                         "password " + user.getPassword()));
     }
-
-
     public UserProfile getUserProfileByUsername(String username){
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
@@ -58,5 +56,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 orElseThrow(() -> new UsernameNotFoundException("UserProfile not found with username: " + username));
         return userProfile;
     }
-
 }
