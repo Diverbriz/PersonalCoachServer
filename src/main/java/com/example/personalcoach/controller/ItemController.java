@@ -2,12 +2,15 @@ package com.example.personalcoach.controller;
 
 import com.example.personalcoach.exception.NotFoundExceptions;
 import com.example.personalcoach.model.Brand;
+import com.example.personalcoach.model.ImageItem;
 import com.example.personalcoach.model.Item;
 import com.example.personalcoach.model.Type;
 import com.example.personalcoach.service.item.BrandService;
 import com.example.personalcoach.service.item.ItemService;
 import com.example.personalcoach.service.item.TypeService;
+import com.example.pojo.item.ImageItemRequest;
 import com.example.pojo.item.ItemRequest;
+import com.example.pojo.item.ItemResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
@@ -121,4 +124,34 @@ public class ItemController {
         Type type = typeService.findOneByName(typeName);
         return new ResponseEntity<>(itemService.getAllItem(name, brand, type), HttpStatus.OK);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getItemById(
+            @PathVariable Long id){
+
+            Item item = itemService.findOneById(id);
+            List<ImageItem> itemList = itemService.getImageByItemId(item.getId());
+            ItemResponse itemResponse = new ItemResponse(item, itemList);
+            return ResponseEntity.ok(itemResponse);
+
+    }
+
+    @PostMapping("/image/create")
+    public ResponseEntity<?> createImageItem(
+            @RequestBody ImageItemRequest imageItem
+    ){
+        try {
+            Item item = itemService.findOneById(imageItem.getItemId());
+
+            itemService.createImageItem(new ImageItem(item, imageItem.getUrl()));
+            return ResponseEntity.ok(
+                    imageItem
+            );
+        }catch (NotFoundExceptions e){
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
+    }
 }
+
+//

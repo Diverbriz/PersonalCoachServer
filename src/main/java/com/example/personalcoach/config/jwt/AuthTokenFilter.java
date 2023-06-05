@@ -2,11 +2,13 @@ package com.example.personalcoach.config.jwt;
 
 import com.example.personalcoach.service.UserDetailsServiceImpl;
 import com.example.personalcoach.utils.JwtUtils;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,8 +50,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
             }
+        } catch (ExpiredJwtException e) {
+            System.out.println("Expired JWT token."+ e);
+            //HANDLE IT HERE::::: wrap ExpiredJwtException in AuthenticationException and rethrow Exception
+            throw new CredentialsExpiredException("Expired jwt credentials ", e);
+
         } catch (Exception e) {
-            System.err.println("Cannot set employee authentication: {}\n"+e);
+            System.out.println("JWT token compact of handler are invalid trace: "+ e);
         }
 
         filterChain.doFilter(request, response);

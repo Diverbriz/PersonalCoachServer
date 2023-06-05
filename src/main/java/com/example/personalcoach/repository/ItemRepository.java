@@ -13,6 +13,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Optional<List<Item>> findAllByBrandId(Brand brand);
 
+    Optional<Item> findFirstById(Long id);
     Optional<List<Item>> findAllByTypeId(Type type);
     Optional<List<Item>> findItemsByName(String name);
 
