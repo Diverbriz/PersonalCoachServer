@@ -32,8 +32,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            System.out.println("Parse jwt "+jwt);
-            if (jwtUtils.validateToken(jwt)) {
+            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
 
                 String username = jwtUtils
                         .getUserNameFromJwtToken(jwt);
@@ -52,15 +51,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
             }
-        } catch (ExpiredJwtException e) {
-            System.out.println("Expired JWT token."+ e);
-            //HANDLE IT HERE::::: wrap ExpiredJwtException in AuthenticationException and rethrow Exception
-            throw new CredentialsExpiredException("Expired jwt credentials ", e);
-
-        }catch (DecodingException e){
-            System.out.println("JWT token : "+ e);
-        } catch(Exception e) {
-            System.out.println("JWT token compact of handler are invalid trace: "+ e);
+        } catch (Exception e) {
+            System.err.println("Cannot set employee authentication: {}\n"+e);
         }
 
         filterChain.doFilter(request, response);
@@ -71,9 +63,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(headerAuth)
                 && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.split(" ")[1].trim();
+            return headerAuth.substring(7);
         }
 
-        return headerAuth.trim();
+        return null;
     }
 }

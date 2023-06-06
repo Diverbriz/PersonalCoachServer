@@ -4,6 +4,7 @@ import com.example.personalcoach.model.ERole;
 import com.example.personalcoach.model.Role;
 import com.example.personalcoach.model.User;
 import com.example.personalcoach.repository.RoleRepository;
+import com.example.personalcoach.repository.UserRepository;
 import com.example.personalcoach.service.UserDetailsImpl;
 import com.example.personalcoach.service.UserDetailsServiceImpl;
 import com.example.personalcoach.utils.JwtUtils;
@@ -33,7 +34,7 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
@@ -67,6 +68,18 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest){
         try{
+
+            if(userRepository.existsByUsername(signupRequest.getUsername())){
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Error: Username is exist"));
+            }
+            if(userRepository.existsByEmail(signupRequest.getEmail())){
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Error: Email is exist"));
+            }
+
             User user = new User(
                     signupRequest.getUsername(),
                     signupRequest.getEmail(),
@@ -110,7 +123,7 @@ public class AuthController {
 
             user.setRoles(roles);
 
-            userDetailsService.createUser(user);
+            userRepository.save(user);
             return new ResponseEntity<>(user, HttpStatus.OK);
         } catch (Exception e){
             e.printStackTrace();

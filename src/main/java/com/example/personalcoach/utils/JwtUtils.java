@@ -26,60 +26,36 @@ public class JwtUtils {
     @Value("${jwt.token.expired}")
     private int jwtExpired;
 
-    public String generateJwt(Authentication authentication) {
+    public String generateJwt(Authentication authentication){
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        final SecretKey jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-        final LocalDateTime now = LocalDateTime.now();
-        final Instant accessExpirationInstant = now.plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant();
-        final Date accessExpiration = Date.from(accessExpirationInstant);
+        System.out.println(generateSafeToken());
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setExpiration(accessExpiration)
-                .signWith(jwtAccessSecret)
-                .claim("roles", userDetails.getAuthorities())
-                .claim("firstName", userDetails.getUsername())
+                .setSubject(userDetails.getUsername()).setIssuedAt(new Date())
+                .setExpiration(new Date(new Date().getTime() + jwtExpired * 10000L))
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
-    public boolean validateToken(@NonNull String token) {
+    public boolean validateJwtToken(String authToken) {
         try {
-            final SecretKey jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-
-            Jwts.parserBuilder()
-                    .setSigningKey(jwtAccessSecret)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parser().setSigningKey(jwtSecret)
+                    .parseClaimsJws(authToken);
             return true;
-        } catch (ExpiredJwtException expEx) {
-            System.out.println("Token expired "+ expEx);
-
-        } catch (UnsupportedJwtException unsEx) {
-            System.out.println("Unsupported jwt "+ unsEx);
-        } catch (MalformedJwtException mjEx) {
-            System.out.println("Malformed jwt "+ mjEx);
-        } catch (Exception e) {
-            System.out.println("invalid token "+e);
+        } catch (MalformedJwtException e) {
+            System.err.println("Invalid JWT token: {}\n"+ e.getMessage());
+        } catch (ExpiredJwtException e) {
+            System.err.println("JWT token is expired: {}\n"+ e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            System.err.println("JWT token is unsupported: {}\n"+ e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("JWT claims string is empty: {}\n"+ e.getMessage());
         }
+
         return false;
     }
 
-    public Claims getAllClaimsFromToken(String token) {
-        Claims claims;
-        try {
-            claims = Jwts.parser()
-                    .setSigningKey(jwtSecret)
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (Exception e) {
-            claims = null;
-        }
-        return claims;
-    }
-
     public String getUserNameFromJwtToken(String token) {
-        final SecretKey jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-
-        return Jwts.parser().setSigningKey(jwtAccessSecret)
+        return Jwts.parser().setSigningKey(jwtSecret)
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
