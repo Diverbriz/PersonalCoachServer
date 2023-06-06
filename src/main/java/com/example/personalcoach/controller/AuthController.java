@@ -117,6 +117,4 @@ public class AuthController {
         }
         return new ResponseEntity("Непредвиденная ошибка" ,HttpStatus.BAD_REQUEST);
     }
-
-
 }

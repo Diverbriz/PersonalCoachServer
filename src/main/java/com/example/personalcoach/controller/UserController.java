@@ -28,12 +28,7 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<?> getUserInfo
             (@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
-        if (token.length() > 10 && jwtUtils.validateJwtToken(token)) {
 
-            String username = jwtUtils
-                    .getUserNameFromJwtToken(token);
-            return ResponseEntity.ok(username);
-        }
-        return ResponseEntity.badRequest().body("Bad token");
+        return ResponseEntity.ok(jwtUtils.getUserNameFromJwtToken(token));
     }
 }

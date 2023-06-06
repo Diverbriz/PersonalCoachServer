@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.codec.DecodingException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +32,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            if (jwtUtils.validateJwtToken(jwt)) {
+            System.out.println("Parse jwt "+jwt);
+            if (jwtUtils.validateToken(jwt)) {
 
                 String username = jwtUtils
                         .getUserNameFromJwtToken(jwt);
@@ -55,7 +57,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             //HANDLE IT HERE::::: wrap ExpiredJwtException in AuthenticationException and rethrow Exception
             throw new CredentialsExpiredException("Expired jwt credentials ", e);
 
-        } catch (Exception e) {
+        }catch (DecodingException e){
+            System.out.println("JWT token : "+ e);
+        } catch(Exception e) {
             System.out.println("JWT token compact of handler are invalid trace: "+ e);
         }
 
@@ -70,6 +74,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             return headerAuth.split(" ")[1].trim();
         }
 
-        return headerAuth.split(" ")[1].trim();
+        return headerAuth.trim();
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -115,14 +116,22 @@ public class ItemController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<Item>> getAllItems(
+    public ResponseEntity<List<ItemResponse>> getAllItems(
             @RequestParam("name") String name,
             @RequestParam("brandName") String brandName,
             @RequestParam("typeName") String typeName
     ){
         Brand brand = brandService.findOneByName(brandName);
         Type type = typeService.findOneByName(typeName);
-        return new ResponseEntity<>(itemService.getAllItem(name, brand, type), HttpStatus.OK);
+
+        List<Item> itemList = itemService.getAllItem(name, brand, type);
+        List<ItemResponse> response = new ArrayList<>();
+        for (Item item:itemList
+             ) {
+            List<ImageItem> images = itemService.getImageByItemId(item.getId());
+            response.add(new ItemResponse(item, images));
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -152,6 +161,7 @@ public class ItemController {
                     .body(e.getMessage());
         }
     }
+
 }
 
 //
